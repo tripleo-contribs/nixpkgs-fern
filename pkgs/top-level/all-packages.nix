@@ -8351,6 +8351,8 @@ with pkgs;
     mkFranzDerivation = callPackage ../applications/networking/instant-messengers/franz/generic.nix { };
   };
 
+  fernflower = callPackage ../tools/security/fernflower { };
+
   fq = callPackage ../development/tools/fq { };
 
   franz = callPackage ../applications/networking/instant-messengers/franz {
