@@ -1,27 +1,21 @@
-{ lib, fetchFromGitHub, php, }:
+{
+  lib,
+  fetchFromGitHub,
+  php,
+}:
 
 php.buildComposerProject (finalAttrs: {
   pname = "davis";
-  version = "4.4.1";
+  version = "4.4.3";
 
   src = fetchFromGitHub {
     owner = "tchapi";
     repo = "davis";
     rev = "v${finalAttrs.version}";
-    hash = "sha256-UBekmxKs4dveHh866Ix8UzY2NL6ygb8CKor+V3Cblns=";
+    hash = "sha256-0Km4bLQVfbkr5BL8XY5tM147Sje8hcFOjhCRnXq+4d4=";
   };
 
-  composerLock = ./composer.lock;
-  vendorHash = "sha256-WGeNwBRzfUXa7kPIwd7/5dPXDjaBxXirAJcm6lNzueY=";
-
-  patches = [
-    # Symfony loads .env files from the same directory as composer.json
-    # The .env files contain runtime configuration that shouldn't be baked into deriviation for the package
-    # This patch adds a few extension points exposing three environment variables:
-    #    RUNTIME_DIRECTORY (where to load .env from), CACHE_DIRECTORY and LOG_DIRECTORY (symfony cache and log rw directories)
-    # Upstream PR https://github.com/tchapi/davis/issues/154
-    ./davis-data.patch
-  ];
+  vendorHash = "sha256-NOb6rc9jVsf+/RVOW7SLBAJk9SihcRxoepUEGBGLi2w=";
 
   postInstall = ''
     # Only include the files needed for runtime in the derivation
@@ -34,7 +28,7 @@ php.buildComposerProject (finalAttrs: {
   meta = {
     changelog = "https://github.com/tchapi/davis/releases/tag/v${finalAttrs.version}";
     homepage = "https://github.com/tchapi/davis";
-    description = "A simple CardDav and CalDav server inspired by Baïkal";
+    description = "Simple CardDav and CalDav server inspired by Baïkal";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ ramblurr ];
   };

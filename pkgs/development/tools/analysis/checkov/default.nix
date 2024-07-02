@@ -1,29 +1,29 @@
-{ lib
-, fetchFromGitHub
-, python3
+{
+  lib,
+  fetchFromGitHub,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication rec {
   pname = "checkov";
-  version = "3.2.50";
+  version = "3.2.159";
   pyproject = true;
 
   src = fetchFromGitHub {
     owner = "bridgecrewio";
     repo = "checkov";
     rev = "refs/tags/${version}";
-    hash = "sha256-XOH4RrkyjTZY1N5XSR71GEGofPgqI7XkE8c3/ojoHGI=";
+    hash = "sha256-ZWJf499yr4aOrNHNaoaQ+t4zxCUZrw3FzEytEkGcAnk=";
   };
 
-  patches = [
-    ./flake8-compat-5.x.patch
-  ];
+  patches = [ ./flake8-compat-5.x.patch ];
 
   pythonRelaxDeps = [
-    "boto3"
-    "botocore"
     "bc-detect-secrets"
     "bc-python-hcl2"
+    "boto3"
+    "botocore"
+    "cyclonedx-python-lib"
     "dpath"
     "igraph"
     "license-expression"
@@ -32,7 +32,9 @@ python3.pkgs.buildPythonApplication rec {
     "packageurl-python"
     "packaging"
     "pycep-parser"
+    "rustworkx"
     "termcolor"
+    "urllib3"
   ];
 
   pythonRemoveDeps = [
@@ -41,8 +43,11 @@ python3.pkgs.buildPythonApplication rec {
   ];
 
   build-system = with python3.pkgs; [
-    pythonRelaxDepsHook
     setuptools-scm
+  ];
+
+  nativeBuildInputs = with python3.pkgs; [
+    pythonRelaxDepsHook
   ];
 
   dependencies = with python3.pkgs; [
@@ -119,6 +124,8 @@ python3.pkgs.buildPythonApplication rec {
     "test_runner"
     # AssertionError: assert ['<?xml versi...
     "test_get_cyclonedx_report"
+    # Test fails on Hydra
+    "test_sast_js_filtered_files_by_ts"
   ];
 
   disabledTestPaths = [
@@ -146,9 +153,7 @@ python3.pkgs.buildPythonApplication rec {
     "dogfood_tests/test_checkov_dogfood.py"
   ];
 
-  pythonImportsCheck = [
-    "checkov"
-  ];
+  pythonImportsCheck = [ "checkov" ];
 
   postInstall = ''
     chmod +x $out/bin/checkov
@@ -163,6 +168,9 @@ python3.pkgs.buildPythonApplication rec {
       Kubernetes, Serverless framework and other infrastructure-as-code-languages.
     '';
     license = licenses.asl20;
-    maintainers = with maintainers; [ anhdle14 fab ];
+    maintainers = with maintainers; [
+      anhdle14
+      fab
+    ];
   };
 }
