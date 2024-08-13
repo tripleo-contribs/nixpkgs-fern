@@ -1,25 +1,24 @@
-{ lib
-, fetchFromGitHub
-, python3
+{
+  lib,
+  fetchFromGitHub,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication rec {
   pname = "offat";
-  version = "0.16.0";
+  version = "0.19.3";
   pyproject = true;
 
   src = fetchFromGitHub {
     owner = "OWASP";
     repo = "OFFAT";
     rev = "refs/tags/v${version}";
-    hash = "sha256-ald+hanICvY0jTgL7GtIMiArLWazykaJAJSfzPKE4/I=";
+    hash = "sha256-LZd9nMeI+TMd95r6CuNAB7eMqrE97ne0ioPjuIbtK7w=";
   };
 
   sourceRoot = "${src.name}/src";
 
-  build-system = with python3.pkgs; [
-    poetry-core
-  ];
+  build-system = with python3.pkgs; [ poetry-core ];
 
   dependencies = with python3.pkgs; [
     aiohttp
@@ -45,9 +44,7 @@ python3.pkgs.buildPythonApplication rec {
   # Project has no tests
   doCheck = false;
 
-  pythonImportsCheck = [
-    "offat"
-  ];
+  pythonImportsCheck = [ "offat" ];
 
   meta = with lib; {
     description = "Tool to test APIs for prevalent vulnerabilities";

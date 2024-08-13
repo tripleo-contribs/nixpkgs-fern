@@ -7,22 +7,22 @@
 
 let
   pname = "osu-lazer-bin";
-  version = "2024.312.1";
+  version = "2024.731.0";
 
   src = {
     aarch64-darwin = fetchzip {
       url = "https://github.com/ppy/osu/releases/download/${version}/osu.app.Apple.Silicon.zip";
-      hash = "sha256-1MsZ9gHTZKArXk1b6XEBNk/ZWAUHKjbVrrn++dLulaQ=";
+      hash = "sha256-Z6BIRFkaVBthkZXvewr4lAQCXVNz5SAsm9dR26lZu64=";
       stripRoot = false;
     };
     x86_64-darwin = fetchzip {
       url = "https://github.com/ppy/osu/releases/download/${version}/osu.app.Intel.zip";
-      hash = "sha256-Xgl8lrMsL9O9YHbEx3Iwwh9fpLOnYZN0Kt28F5X5OwE=";
+      hash = "sha256-FWmkcmuMMj4B2dsIlliCuOiQjR+5sAU+b9Jmd+RCmiU=";
       stripRoot = false;
     };
     x86_64-linux = fetchurl {
       url = "https://github.com/ppy/osu/releases/download/${version}/osu.AppImage";
-      hash = "sha256-1dzgs1p3/pf4eCdKvQ9JxowN+oBPBNaZv5e6qHeFPEM=";
+      hash = "sha256-6BxHRM7hC+v61BVqSFTzGpi7EyZQeo7kWua0CkrWiPM=";
     };
   }.${stdenv.system} or (throw "${pname}-${version}: ${stdenv.system} is unsupported.");
 
@@ -35,7 +35,7 @@ let
       unfreeRedistributable # osu-framework contains libbass.so in repository
     ];
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
-    maintainers = with lib.maintainers; [ delan gepbird spacefault stepbrobd ];
+    maintainers = with lib.maintainers; [ gepbird stepbrobd ];
     mainProgram = "osu!";
     platforms = [ "aarch64-darwin" "x86_64-darwin" "x86_64-linux" ];
   };
@@ -64,7 +64,7 @@ else appimageTools.wrapType2 {
       contents = appimageTools.extract { inherit pname version src; };
     in
     ''
-      mv -v $out/bin/${pname}-${version} $out/bin/osu\!
+      mv -v $out/bin/${pname} $out/bin/osu\!
       install -m 444 -D ${contents}/osu\!.desktop -t $out/share/applications
       for i in 16 32 48 64 96 128 256 512 1024; do
         install -D ${contents}/osu\!.png $out/share/icons/hicolor/''${i}x$i/apps/osu\!.png

@@ -5,7 +5,9 @@
 , nixosTests
 , gettext
 , python3
-, ghostscript
+, giflib
+, darwin
+, ghostscript_headless
 , imagemagickBig
 , jbig2enc
 , optipng
@@ -22,19 +24,39 @@
 }:
 
 let
-  version = "2.6.3";
+  version = "2.11.2";
 
   src = fetchFromGitHub {
     owner = "paperless-ngx";
     repo = "paperless-ngx";
     rev = "refs/tags/v${version}";
-    hash = "sha256-M1CnB1adk02lJuFsm0zzjSx/l9hKHJMt1Wh2a5Xtdyg=";
+    hash = "sha256-2VmV8Z8TDacc4qZePG87ZgnBydLdm+anpmk8gFKbSLM=";
   };
 
-  python = python3;
+  # subpath installation is broken with uvicorn >= 0.26
+  # https://github.com/NixOS/nixpkgs/issues/298719
+  # https://github.com/paperless-ngx/paperless-ngx/issues/5494
+  python = python3.override {
+    self = python;
+    packageOverrides = final: prev: {
+      # tesseract5 may be overwritten in the paperless module and we need to propagate that to make the closure reduction effective
+      ocrmypdf = prev.ocrmypdf.override { tesseract = tesseract5; };
+
+      uvicorn = prev.uvicorn.overridePythonAttrs (_: {
+        version = "0.25.0";
+        src = fetchFromGitHub {
+          owner = "encode";
+          repo = "uvicorn";
+          rev = "0.25.0";
+          hash = "sha256-ng98DTw49zyFjrPnEwfnPfONyjKKZYuLl0qduxSppYk=";
+        };
+      });
+    };
+  };
+
 
   path = lib.makeBinPath [
-    ghostscript
+    ghostscript_headless
     imagemagickBig
     jbig2enc
     optipng
@@ -53,7 +75,7 @@ let
       cd src-ui
     '';
 
-    npmDepsHash = "sha256-qgCUfGVk698Ink23U7LxkGdFoNpOhCp240tbk+hU0dk=";
+    npmDepsHash = "sha256-gbHavMUmsZaRSfBkdrrNpTO0R8zacb8110U8n5Y09oU=";
 
     nativeBuildInputs = [
       pkg-config
@@ -64,6 +86,9 @@ let
 
     buildInputs = [
       pango
+    ] ++ lib.optionals stdenv.isDarwin [
+      giflib
+      darwin.apple_sdk.frameworks.CoreText
     ];
 
     CYPRESS_INSTALL_BINARY = "0";
@@ -114,6 +139,7 @@ python.pkgs.buildPythonApplication rec {
     django-filter
     django-guardian
     django-multiselectfield
+    django-soft-delete
     djangorestframework
     djangorestframework-guardian2
     drf-writable-nested
@@ -129,7 +155,7 @@ python.pkgs.buildPythonApplication rec {
     ocrmypdf
     pathvalidate
     pdf2image
-    psycopg2
+    psycopg
     python-dateutil
     python-dotenv
     python-gnupg
@@ -166,6 +192,8 @@ python.pkgs.buildPythonApplication rec {
   installPhase = let
     pythonPath = python.pkgs.makePythonPath propagatedBuildInputs;
   in ''
+    runHook preInstall
+
     mkdir -p $out/lib/paperless-ngx
     cp -r {src,static,LICENSE,gunicorn.conf.py} $out/lib/paperless-ngx
     ln -s ${frontend}/lib/paperless-ui/frontend $out/lib/paperless-ngx/static/
@@ -176,6 +204,8 @@ python.pkgs.buildPythonApplication rec {
     makeWrapper ${python.pkgs.celery}/bin/celery $out/bin/celery \
       --prefix PYTHONPATH : "${pythonPath}:$out/lib/paperless-ngx/src" \
       --prefix PATH : "${path}"
+
+    runHook postInstall
   '';
 
   postFixup = ''
@@ -190,6 +220,7 @@ python.pkgs.buildPythonApplication rec {
     pytest-django
     pytest-env
     pytest-httpx
+    pytest-mock
     pytest-rerunfailures
     pytest-xdist
     pytestCheckHook
@@ -216,15 +247,18 @@ python.pkgs.buildPythonApplication rec {
   disabledTests = [
     # FileNotFoundError(2, 'No such file or directory'): /build/tmp...
     "test_script_with_output"
+    "test_script_exit_non_zero"
     # AssertionError: 10 != 4 (timezone/time issue)
     # Due to getting local time from modification date in test_consumer.py
     "testNormalOperation"
+    # Something broken with new Tesseract and inline RTL/LTR overrides?
+    "test_rtl_language_detection"
   ];
 
   doCheck = !stdenv.isDarwin;
 
   passthru = {
-    inherit python path frontend;
+    inherit python path frontend tesseract5;
     nltkData = with nltk-data; [ punkt snowball_data stopwords ];
     tests = { inherit (nixosTests) paperless; };
   };

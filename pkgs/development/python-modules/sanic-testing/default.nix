@@ -1,11 +1,12 @@
-{ lib
-, buildPythonPackage
-, callPackage
-, fetchFromGitHub
-, httpx
-, pythonOlder
-, sanic
-, websockets
+{
+  lib,
+  buildPythonPackage,
+  callPackage,
+  fetchFromGitHub,
+  httpx,
+  pythonOlder,
+  sanic,
+  websockets,
 }:
 
 buildPythonPackage rec {
@@ -52,6 +53,6 @@ buildPythonPackage rec {
     homepage = "https://github.com/sanic-org/sanic-testing";
     changelog = "https://github.com/sanic-org/sanic-testing/releases/tag/v${version}";
     license = licenses.mit;
-    maintainers = with maintainers; [ AluisioASG ];
+    maintainers = [ ];
   };
 }

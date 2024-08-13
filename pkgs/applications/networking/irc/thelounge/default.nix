@@ -4,10 +4,10 @@
 , fetchYarnDeps
 , nodejs
 , yarn
-, prefetch-yarn-deps
+, fixup-yarn-lock
 , python3
 , npmHooks
-, darwin
+, cctools
 , sqlite
 , srcOnly
 , buildPackages
@@ -38,7 +38,7 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-MM6SgVT7Pjdu96A4eWRucEzT7uNPxBqUDgHKl8mH2C0=";
   };
 
-  nativeBuildInputs = [ nodejs yarn prefetch-yarn-deps python3 npmHooks.npmInstallHook ] ++ lib.optional stdenv.isDarwin darwin.cctools;
+  nativeBuildInputs = [ nodejs yarn fixup-yarn-lock python3 npmHooks.npmInstallHook ] ++ lib.optional stdenv.isDarwin cctools;
   buildInputs = [ sqlite ];
 
   configurePhase = ''

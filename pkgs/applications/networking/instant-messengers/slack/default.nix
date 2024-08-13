@@ -45,14 +45,14 @@ let
 
   pname = "slack";
 
-  x86_64-darwin-version = "4.37.94";
-  x86_64-darwin-sha256 = "01v7v977fq8mfsl0lipdc7ig55p2sknxzr1jmh8qxiq4f4y0rj5g";
+  x86_64-darwin-version = "4.39.90";
+  x86_64-darwin-sha256 = "0wdvsw0m1jks1n97anzamssicl9jfx9js480q3kl9hd80viz97lq";
 
-  x86_64-linux-version = "4.37.94";
-  x86_64-linux-sha256 = "1f1spl767ldrarvpxrayry2d0nyr22b8xacxl4g1r8raryvnyz0x";
+  x86_64-linux-version = "4.39.90";
+  x86_64-linux-sha256 = "00ygbka304xnh99s17hh51lxjdkv2flh6nmn143dkj7qqabgrll8";
 
-  aarch64-darwin-version = "4.37.94";
-  aarch64-darwin-sha256 = "0gh45gvlbjzxh0fn24z15glxqih5lggam8w6kpawsxgivkw6rjcc";
+  aarch64-darwin-version = "4.39.90";
+  aarch64-darwin-sha256 = "0rm0khbf2bqxs2ddlmss7m3sb5yy05lb96kv0a065ifadzcf5zsb";
 
   version = {
     x86_64-darwin = x86_64-darwin-version;
@@ -65,15 +65,15 @@ let
     base = "https://downloads.slack-edge.com";
   in {
     x86_64-darwin = fetchurl {
-      url = "${base}/releases/macos/${version}/prod/x64/Slack-${version}-macOS.dmg";
+      url = "${base}/desktop-releases/mac/universal/${version}/Slack-${version}-macOS.dmg";
       sha256 = x86_64-darwin-sha256;
     };
     x86_64-linux = fetchurl {
-      url = "${base}/releases/linux/${version}/prod/x64/slack-desktop-${version}-amd64.deb";
+      url = "${base}/desktop-releases/linux/x64/${version}/slack-desktop-${version}-amd64.deb";
       sha256 = x86_64-linux-sha256;
     };
     aarch64-darwin = fetchurl {
-      url = "${base}/releases/macos/${version}/prod/arm64/Slack-${version}-macOS.dmg";
+      url = "${base}/desktop-releases/mac/arm64/${version}/Slack-${version}-macOS.dmg";
       sha256 = aarch64-darwin-sha256;
     };
   }.${system} or throwSystem;
@@ -84,7 +84,7 @@ let
     changelog = "https://slack.com/release-notes";
     sourceProvenance = with sourceTypes; [ binaryNativeCode ];
     license = licenses.unfree;
-    maintainers = with maintainers; [ mmahut amaxine ];
+    maintainers = with maintainers; [ mmahut teutat3s ];
     platforms = [ "x86_64-darwin" "x86_64-linux" "aarch64-darwin" ];
     mainProgram = "slack";
   };

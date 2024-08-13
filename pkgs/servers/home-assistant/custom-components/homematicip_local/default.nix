@@ -7,13 +7,13 @@
 buildHomeAssistantComponent rec {
   owner = "danielperna84";
   domain = "homematicip_local";
-  version = "1.58.0";
+  version = "1.64.0";
 
   src = fetchFromGitHub {
     owner = "danielperna84";
     repo = "custom_homematic";
     rev = "refs/tags/${version}";
-    hash = "sha256-ianM29eF2MN2THS3CTg4tBkd+8pV/m1fg8VvMDhhadg=";
+    hash = "sha256-uKqX7TJrqujH8C9K8VPx977GsDeAdMh94390G5omUMY=";
   };
 
   dependencies = [

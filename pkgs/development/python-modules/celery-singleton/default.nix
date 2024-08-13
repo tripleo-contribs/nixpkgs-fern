@@ -1,12 +1,14 @@
-{ lib
-, buildPythonPackage
-, fetchpatch
-, fetchFromGitHub
-, poetry-core
-, celery
-, redis
-, pytestCheckHook
-, pytest-celery
+{
+  lib,
+  buildPythonPackage,
+  fetchpatch,
+  fetchFromGitHub,
+  poetry-core,
+  celery,
+  redis,
+  pytestCheckHook,
+  pytest-celery,
+  pytest-cov-stub,
 }:
 
 buildPythonPackage rec {
@@ -21,13 +23,6 @@ buildPythonPackage rec {
     hash = "sha256-fHlakxxjYIADELZdxIj6rvsZ/+1QfnKvAg3w5cdzvDc=";
   };
 
-  postPatch = ''
-    # Disable coverage reporting in tests
-    substituteInPlace setup.cfg \
-      --replace "--cov" "" \
-      --replace "--no-cov-on-fail" ""
-  '';
-
   patches = [
     # chore(poetry): use poetry-core
     # https://github.com/steinitzu/celery-singleton/pull/54
@@ -38,9 +33,7 @@ buildPythonPackage rec {
     })
   ];
 
-  nativeBuildInputs = [
-    poetry-core
-  ];
+  nativeBuildInputs = [ poetry-core ];
 
   propagatedBuildInputs = [
     celery
@@ -50,6 +43,7 @@ buildPythonPackage rec {
   checkInputs = [
     pytestCheckHook
     pytest-celery
+    pytest-cov-stub
   ];
 
   pytestFlagsArray = [ "tests" ];

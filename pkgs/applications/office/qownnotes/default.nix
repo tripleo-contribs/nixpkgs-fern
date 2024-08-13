@@ -8,25 +8,26 @@
 , qtsvg
 , qtwayland
 , qtwebsockets
-, qt5compat
 , makeWrapper
 , wrapQtAppsHook
 , botan2
 , pkg-config
 , nixosTests
+, installShellFiles
+, xvfb-run
 }:
 
 let
   pname = "qownnotes";
   appname = "QOwnNotes";
-  version = "24.3.5";
+  version = "24.8.3";
 in
 stdenv.mkDerivation {
   inherit pname version;
 
   src = fetchurl {
     url = "https://github.com/pbek/QOwnNotes/releases/download/v${version}/qownnotes-${version}.tar.xz";
-    hash = "sha256-s3OeTK6XodIMrNTuImdljbQYX1Abj7SFOZmPJgm2teo=";
+    hash = "sha256-lbNJT6IbIgTYLpsMWK6Nk0XXhw1De+wZgrH4DE1vDKg=";
   };
 
   nativeBuildInputs = [
@@ -34,6 +35,8 @@ stdenv.mkDerivation {
     qttools
     wrapQtAppsHook
     pkg-config
+    installShellFiles
+    xvfb-run
   ] ++ lib.optionals stdenv.isDarwin [ makeWrapper ];
 
   buildInputs = [
@@ -41,7 +44,6 @@ stdenv.mkDerivation {
     qtdeclarative
     qtsvg
     qtwebsockets
-    qt5compat
     botan2
   ] ++ lib.optionals stdenv.isLinux [ qtwayland ];
 
@@ -49,9 +51,16 @@ stdenv.mkDerivation {
     "USE_SYSTEM_BOTAN=1"
   ];
 
-  postInstall =
+  postInstall = ''
+    installShellCompletion --cmd ${appname} \
+      --bash <(xvfb-run $out/bin/${appname} --completion bash) \
+      --fish <(xvfb-run $out/bin/${appname} --completion fish)
+    installShellCompletion --cmd ${pname} \
+      --bash <(xvfb-run $out/bin/${appname} --completion bash) \
+      --fish <(xvfb-run $out/bin/${appname} --completion fish)
+  ''
   # Create a lowercase symlink for Linux
-  lib.optionalString stdenv.isLinux ''
+  + lib.optionalString stdenv.isLinux ''
     ln -s $out/bin/${appname} $out/bin/${pname}
   ''
   # Wrap application for macOS as lowercase binary

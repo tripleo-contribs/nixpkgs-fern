@@ -1,22 +1,23 @@
-{ lib
-, buildPythonPackage
-, fetchFromGitHub
-, pytestCheckHook
-, pythonOlder
-, pythonRelaxDepsHook
-, setuptools
-, build
-, coloredlogs
-, packaging
-, pip
-, readme-renderer
-, toml
-, twine
+{
+  lib,
+  buildPythonPackage,
+  fetchFromGitHub,
+  pytestCheckHook,
+  pythonOlder,
+
+  setuptools,
+  build,
+  coloredlogs,
+  importlib-metadata,
+  packaging,
+  pip,
+  toml,
+  urllib3,
 }:
 
 buildPythonPackage rec {
   pname = "bork";
-  version = "8.0.0";
+  version = "9.0.0";
   pyproject = true;
   disabled = pythonOlder "3.8";
 
@@ -24,19 +25,15 @@ buildPythonPackage rec {
     owner = "duckinator";
     repo = pname;
     rev = "refs/tags/v${version}";
-    hash = "sha256-BDwVhKmZ/F8CvpT6dEI5moQZx8wHy1TwdOl889XogEo=";
+    hash = "sha256-YqvtOwd00TXD4I3fIQolvjHnjREvQgbdrEO9Z96v1Kk=";
   };
 
   build-system = [
-    pythonRelaxDepsHook
     setuptools
   ];
 
   pythonRelaxDeps = [
     "packaging"
-    "readme-renderer"
-    "twine"
-    "wheel"
   ];
 
   dependencies = [
@@ -44,11 +41,10 @@ buildPythonPackage rec {
     coloredlogs
     packaging
     pip
-    readme-renderer
-    twine
-  ] ++ lib.optionals (pythonOlder "3.11") [
-    toml
-  ];
+    urllib3
+  ] ++ lib.optionals (pythonOlder "3.11") [ toml ]
+    ++ lib.optionals (pythonOlder "3.10") [ importlib-metadata ]
+  ;
 
   pythonImportsCheck = [
     "bork"
@@ -56,13 +52,9 @@ buildPythonPackage rec {
     "bork.cli"
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
+  nativeCheckInputs = [ pytestCheckHook ];
 
-  pytestFlagsArray = [
-    "-m 'not network'"
-  ];
+  pytestFlagsArray = [ "-m 'not network'" ];
 
   disabledTests = [
     # tries to call python -m bork
@@ -73,7 +65,7 @@ buildPythonPackage rec {
     description = "Python build and release management tool";
     mainProgram = "bork";
     homepage = "https://github.com/duckinator/bork";
+    license = licenses.mit;
     maintainers = with maintainers; [ nicoo ];
-    platforms = platforms.all;
   };
 }

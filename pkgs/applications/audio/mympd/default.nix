@@ -16,13 +16,13 @@
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "mympd";
-  version = "14.1.0";
+  version = "17.0.0";
 
   src = fetchFromGitHub {
     owner = "jcorporation";
     repo = "myMPD";
     rev = "v${finalAttrs.version}";
-    sha256 = "sha256-yNB5WQi3M4cYogtxx/vLi2xJog2keyFrJIMlx663DLo=";
+    sha256 = "sha256-/8IDwzgZzf63MvXTBP2CoC5IHi7Umr3exU1/oDdadgk=";
   };
 
   nativeBuildInputs = [
@@ -59,7 +59,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     homepage = "https://jcorporation.github.io/myMPD";
-    description = "A standalone and mobile friendly web mpd client with a tiny footprint and advanced features";
+    description = "Standalone and mobile friendly web mpd client with a tiny footprint and advanced features";
     maintainers = [ lib.maintainers.doronbehar ];
     platforms = lib.platforms.linux;
     license = lib.licenses.gpl2Plus;

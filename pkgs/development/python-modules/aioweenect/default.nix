@@ -1,39 +1,42 @@
-{ lib
-, aiohttp
-, aresponses
-, buildPythonPackage
-, fetchFromGitHub
-, poetry-core
-, pytest-asyncio
-, pytestCheckHook
-, pythonOlder
+{
+  lib,
+  aiohttp,
+  aresponses,
+  buildPythonPackage,
+  fetchFromGitHub,
+  hatchling,
+  httpx,
+  pytest-asyncio,
+  pytestCheckHook,
+  pythonOlder,
 }:
 
 buildPythonPackage rec {
   pname = "aioweenect";
-  version = "1.1.1";
-  format = "pyproject";
+  version = "1.1.2";
+  pyproject = true;
 
-  disabled = pythonOlder "3.8";
+  disabled = pythonOlder "3.9";
 
   src = fetchFromGitHub {
     owner = "eifinger";
-    repo = pname;
+    repo = "aioweenect";
     rev = "refs/tags/v${version}";
-    hash = "sha256-9CYdOUPCt4TkepVuVJHMZngFHyCLFwVvik1xDnfneEc=";
+    hash = "sha256-qVhF+gy5qcH/okuncDuzbAUPonkmQo1/QwOjC70IV4w=";
   };
 
   postPatch = ''
     substituteInPlace pyproject.toml \
-      --replace "--cov --cov-report term-missing --cov-report xml --cov=aioweenect tests" ""
+      --replace-fail "--cov --cov-report term-missing --cov=src/aioweenect --asyncio-mode=auto" ""
   '';
 
-  nativeBuildInputs = [
-    poetry-core
-  ];
+  pythonRelaxDeps = [ "aiohttp" ];
 
-  propagatedBuildInputs = [
+  build-system = [ hatchling ];
+
+  dependencies = [
     aiohttp
+    httpx
   ];
 
   nativeCheckInputs = [
@@ -42,14 +45,12 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
-
-  pythonImportsCheck = [
-    "aioweenect"
-  ];
+  pythonImportsCheck = [ "aioweenect" ];
 
   meta = with lib; {
     description = "Library for the weenect API";
     homepage = "https://github.com/eifinger/aioweenect";
+    changelog = "https://github.com/eifinger/aioweenect/releases/tag/v${version}";
     license = with licenses; [ mit ];
     maintainers = with maintainers; [ fab ];
   };

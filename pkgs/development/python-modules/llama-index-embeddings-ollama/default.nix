@@ -1,16 +1,15 @@
-{ lib
-, buildPythonPackage
-, fetchPypi
-, google-generativeai
-, llama-index-core
-, poetry-core
-, pytestCheckHook
-, pythonOlder
+{
+  lib,
+  buildPythonPackage,
+  fetchPypi,
+  llama-index-core,
+  poetry-core,
+  pythonOlder,
 }:
 
 buildPythonPackage rec {
   pname = "llama-index-embeddings-ollama";
-  version = "0.1.2";
+  version = "0.1.3";
   pyproject = true;
 
   disabled = pythonOlder "3.9";
@@ -18,23 +17,17 @@ buildPythonPackage rec {
   src = fetchPypi {
     pname = "llama_index_embeddings_ollama";
     inherit version;
-    hash = "sha256-qeCAm93S5K2IjySVGe3H49M5x05OA/xaQMMGDcQdR6k=";
+    hash = "sha256-S9HdMjDJvgTPpFsow6gGbkbBZU1DYPy+zcFxiskBPso=";
   };
 
-  build-system = [
-    poetry-core
-  ];
+  build-system = [ poetry-core ];
 
-  dependencies = [
-    llama-index-core
-  ];
+  dependencies = [ llama-index-core ];
 
   # Tests are only available in the mono repo
   doCheck = false;
 
-  pythonImportsCheck = [
-    "llama_index.embeddings.ollama"
-  ];
+  pythonImportsCheck = [ "llama_index.embeddings.ollama" ];
 
   meta = with lib; {
     description = "LlamaIndex Llms Integration for Ollama";

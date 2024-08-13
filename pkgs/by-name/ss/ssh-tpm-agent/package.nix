@@ -1,10 +1,10 @@
 { lib
-, buildGo122Module
+, buildGoModule
 , fetchFromGitHub
 , openssl
 }:
 
-buildGo122Module rec {
+buildGoModule rec {
   pname = "ssh-tpm-agent";
   version = "0.3.1";
 
@@ -25,7 +25,7 @@ buildGo122Module rec {
 
   meta = with lib; {
     description = "SSH agent with support for TPM sealed keys for public key authentication";
-    homepage = "https://github.com/Foxboron/ssh-agent-tpm";
+    homepage = "https://github.com/Foxboron/ssh-tpm-agent";
     license = licenses.mit;
     platforms = platforms.linux;
     maintainers = with maintainers; [ sgo ];

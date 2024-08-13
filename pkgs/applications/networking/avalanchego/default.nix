@@ -1,23 +1,22 @@
 { IOKit
 , buildGoModule
 , fetchFromGitHub
-, fetchpatch
 , lib
 , stdenv
 }:
 
 buildGoModule rec {
   pname = "avalanchego";
-  version = "1.11.3";
+  version = "1.11.9";
 
   src = fetchFromGitHub {
     owner = "ava-labs";
     repo = pname;
     rev = "v${version}";
-    hash = "sha256-VeszkBExveXmajnVLHDp9Fc9xngnUKBbVY55L260rds=";
+    hash = "sha256-n6uRXueDq4rsuNdGNe8mbaHXszeNd5Nygq43p7XI9mM=";
   };
 
-  vendorHash = "sha256-8K8loSdeISkA06LBkZgro+mEbQEZY1sdzplq7IKZ4kI=";
+  vendorHash = "sha256-uTMkUARs8XWDmpI7NHu+7BmEPnutkUSmcis+8uDLUH4=";
   # go mod vendor has a bug, see: https://github.com/golang/go/issues/57529
   proxyVendor = true;
 

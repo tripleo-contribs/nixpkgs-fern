@@ -2,11 +2,11 @@
 
 stdenv.mkDerivation rec {
   pname = "roundcube";
-  version = "1.6.6";
+  version = "1.6.8";
 
   src = fetchurl {
     url = "https://github.com/roundcube/roundcubemail/releases/download/${version}/roundcubemail-${version}-complete.tar.gz";
-    sha256 = "sha256-wbk6Ptvil0VzlrCgMdixPIpdwwyTcHBN+5ssEiUBfVI=";
+    sha256 = "sha256-hGi+AgSnNMV0re9L4BV4x9xPq5wv40ADvzQaK9IO/So=";
   };
 
   patches = [ ./0001-Don-t-resolve-symlinks-when-trying-to-find-INSTALL_P.patch ];

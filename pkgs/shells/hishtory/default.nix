@@ -5,16 +5,16 @@
 
 buildGoModule rec {
   pname = "hishtory";
-  version = "0.282";
+  version = "0.303";
 
   src = fetchFromGitHub {
     owner = "ddworken";
     repo = pname;
     rev = "v${version}";
-    hash = "sha256-vuIeNa2Kr19L2lHTtsamjvnMsNNPQYU0yOPXXtXAOvA=";
+    hash = "sha256-uhORdve07JARKT/BD0VLK6XnN4nehXODswczrALK0MQ=";
   };
 
-  vendorHash = "sha256-MUE6cq3mTRUcxO+lhAWr73wAzSYv9eMmv9Twpq/QHTc=";
+  vendorHash = "sha256-qQIyeqNF8unmpJG4+kekF2KDQjcpFanJp7siX+jWRwQ=";
 
   ldflags = [ "-X github.com/ddworken/hishtory/client/lib.Version=${version}" ];
 
@@ -33,7 +33,7 @@ buildGoModule rec {
     description = "Your shell history: synced, queryable, and in context";
     homepage = "https://github.com/ddworken/hishtory";
     license = licenses.mit;
-    maintainers = with maintainers; [ Enzime ];
+    maintainers = [ ];
     mainProgram = "hishtory";
   };
 }

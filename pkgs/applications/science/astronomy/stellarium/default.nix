@@ -4,7 +4,7 @@
 , fetchpatch
 , cmake
 , perl
-, wrapGAppsHook
+, wrapGAppsHook3
 , wrapQtAppsHook
 , qtbase
 , qtcharts
@@ -20,17 +20,19 @@
 , qttools
 , exiv2
 , nlopt
+, testers
+, xvfb-run
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "stellarium";
-  version = "23.4";
+  version = "24.2";
 
   src = fetchFromGitHub {
     owner = "Stellarium";
     repo = "stellarium";
     rev = "v${finalAttrs.version}";
-    hash = "sha256-rDqDs6sFaZQbqJcCRhY5w8sFM2mYHHvw0Ud2Niimg4Y=";
+    hash = "sha256-tqyLwlf8hugixZSsFCZPTtchO3VXk3m/nX1kuDoLOAY=";
   };
 
   patches = [
@@ -52,7 +54,7 @@ stdenv.mkDerivation (finalAttrs: {
   nativeBuildInputs = [
     cmake
     perl
-    wrapGAppsHook
+    wrapGAppsHook3
     wrapQtAppsHook
     qttools
   ];
@@ -92,6 +94,18 @@ stdenv.mkDerivation (finalAttrs: {
   preFixup = ''
     qtWrapperArgs+=("''${gappsWrapperArgs[@]}")
   '';
+
+  passthru.tests.version = testers.testVersion {
+    package = finalAttrs.finalPackage;
+    command = ''
+      # Create a temporary home directory because stellarium aborts with an
+      # error if it can't write some configuration files.
+      tmpdir=$(mktemp -d)
+
+      # stellarium can't be run in headless mode, therefore we need xvfb-run.
+      HOME="$tmpdir" ${xvfb-run}/bin/xvfb-run stellarium --version
+    '';
+  };
 
   meta =  {
     description = "Free open-source planetarium";

@@ -41,7 +41,7 @@
 , lz4
 , oath-toolkit
 , openldap
-, python310
+, python311
 , rdkafka
 , rocksdb
 , snappy
@@ -140,7 +140,7 @@ let
   getMeta = description: with lib; {
      homepage = "https://ceph.io/en/";
      inherit description;
-     license = with licenses; [ lgpl21 gpl2 bsd3 mit publicDomain ];
+     license = with licenses; [ lgpl21 gpl2Only bsd3 mit publicDomain ];
      maintainers = with maintainers; [ adev ak johanot krav ];
      platforms = [ "x86_64-linux" "aarch64-linux" ];
    };
@@ -168,7 +168,8 @@ let
   };
 
   # Watch out for python <> boost compatibility
-  python = python310.override {
+  python = python311.override {
+    self = python;
     packageOverrides = self: super: let
       cryptographyOverrideVersion = "40.0.1";
       bcryptOverrideVersion = "4.0.1";
@@ -239,8 +240,11 @@ let
           inherit version;
           hash = "sha256-hBSYub7GFiOxtsR+u8AjZ8B9YODhlfGXkIF/EMyNsLc=";
         };
-        pytestFlagsArray = [
-          "-W" "ignore::pytest.PytestRemovedIn8Warning"
+        disabledTests = old.disabledTests or [ ] ++ [
+          "test_export_md5_digest"
+        ];
+        propagatedBuildInputs = old.propagatedBuildInputs or [ ] ++ [
+          self.flaky
         ];
       });
 
@@ -270,7 +274,7 @@ let
     ceph-common
 
     # build time
-    cython
+    cython_0
 
     # debian/control
     bcrypt
@@ -305,15 +309,20 @@ let
   ]);
   inherit (ceph-python-env.python) sitePackages;
 
-  version = "18.2.1";
+  version = "18.2.4";
   src = fetchurl {
     url = "https://download.ceph.com/tarballs/ceph-${version}.tar.gz";
-    hash = "sha256-gHWwNHf0KtI7Hv0MwaCqP6A3YR/AWakfUZTktRyddko=";
+    hash = "sha256-EFqteP3Jo+hASXVesH6gkjDjFO7/1RN151tIf/lQ06s=";
   };
 in rec {
   ceph = stdenv.mkDerivation {
     pname = "ceph";
     inherit src version;
+
+    postPatch = ''
+      substituteInPlace cmake/modules/Finduring.cmake \
+        --replace-fail "liburing.a liburing" "uring"
+    '';
 
     nativeBuildInputs = [
       cmake
@@ -331,8 +340,6 @@ in rec {
       doxygen
       graphviz
     ];
-
-    enableParallelBuilding = true;
 
     buildInputs = cryptoLibsMap.${cryptoStr} ++ [
       arrow-cpp
@@ -440,6 +447,14 @@ in rec {
       # WITH_XFS has been set default ON from Ceph 16, keeping it optional in nixpkgs for now
       ''-DWITH_XFS=${if optLibxfs != null then "ON" else "OFF"}''
     ] ++ lib.optional stdenv.isLinux "-DWITH_SYSTEM_LIBURING=ON";
+
+    preBuild =
+      # The legacy-option-headers target is not correctly empbedded in the build graph.
+      # It also contains some internal race conditions that we work around by building with `-j 1`.
+      # Upstream discussion for additional context at https://tracker.ceph.com/issues/63402.
+      ''
+        cmake --build . --target legacy-option-headers -j 1
+      '';
 
     postFixup = ''
       wrapPythonPrograms

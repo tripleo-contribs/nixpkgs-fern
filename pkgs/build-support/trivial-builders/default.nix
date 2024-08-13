@@ -127,7 +127,13 @@ rec {
 
   # See doc/build-helpers/trivial-build-helpers.chapter.md
   # or https://nixos.org/manual/nixpkgs/unstable/#trivial-builder-text-writing
-  writeText = name: text: writeTextFile { inherit name text; };
+  writeText = name: text:
+    # TODO: To fully deprecate, replace the assertion with `lib.isString` and remove the warning
+    assert lib.assertMsg (lib.strings.isConvertibleWithToString text) ''
+      pkgs.writeText ${lib.strings.escapeNixString name}: The second argument should be a string, but it's a ${builtins.typeOf text} instead.'';
+    lib.warnIf (! lib.isString text) ''
+      pkgs.writeText ${lib.strings.escapeNixString name}: The second argument should be a string, but it's a ${builtins.typeOf text} instead, which is deprecated. Use `toString` to convert the value to a string first.''
+    writeTextFile { inherit name text; };
 
   # See doc/build-helpers/trivial-build-helpers.chapter.md
   # or https://nixos.org/manual/nixpkgs/unstable/#trivial-builder-text-writing
@@ -234,6 +240,12 @@ rec {
        */
       excludeShellChecks ? [ ],
       /*
+         Extra command-line flags to pass to ShellCheck.
+
+         Type: [String]
+       */
+      extraShellCheckFlags ? [ ],
+      /*
          Bash options to activate with `set -o` at the start of the script.
 
          Defaults to `[ "errexit" "nounset" "pipefail" ]`.
@@ -282,11 +294,11 @@ rec {
         # but we still want to use writeShellApplication on those platforms
         let
           shellcheckSupported = lib.meta.availableOn stdenv.buildPlatform shellcheck-minimal.compiler;
-          excludeOption = lib.optionalString (excludeShellChecks != [ ]) "--exclude '${lib.concatStringsSep "," excludeShellChecks}'";
+          excludeFlags = lib.optionals (excludeShellChecks != [ ]) [ "--exclude" (lib.concatStringsSep "," excludeShellChecks) ];
           shellcheckCommand = lib.optionalString shellcheckSupported ''
             # use shellcheck which does not include docs
             # pandoc takes long to build and documentation isn't needed for just running the cli
-            ${lib.getExe shellcheck-minimal} ${excludeOption} "$target"
+            ${lib.getExe shellcheck-minimal} ${lib.escapeShellArgs (excludeFlags ++ extraShellCheckFlags)} "$target"
           '';
         in
         if checkPhase == null then ''
@@ -580,7 +592,7 @@ rec {
   '';
 
 
-  # Docs in doc/builders/special/makesetuphook.section.md
+  # Docs in doc/build-helpers/special/makesetuphook.section.md
   # See https://nixos.org/manual/nixpkgs/unstable/#sec-pkgs.makeSetupHook
   makeSetupHook =
     { name ? lib.warn "calling makeSetupHook without passing a name is deprecated." "hook"

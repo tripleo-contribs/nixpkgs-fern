@@ -1,27 +1,27 @@
-{ lib
-, stdenv
-, buildPythonPackage
-, click
-, fetchFromGitHub
-, mock
-, prettytable
-, prompt-toolkit
-, ptable
-, pygments
-, pytestCheckHook
-, pythonOlder
-, requests
-, rich
-, sphinx
-, testtools
-, tkinter
-, urllib3
-, zeep
+{
+  lib,
+  buildPythonPackage,
+  click,
+  fetchFromGitHub,
+  mock,
+  prettytable,
+  prompt-toolkit,
+  ptable,
+  pygments,
+  pytestCheckHook,
+  pythonOlder,
+  requests,
+  rich,
+  sphinx,
+  testtools,
+  tkinter,
+  urllib3,
+  zeep,
 }:
 
 buildPythonPackage rec {
   pname = "softlayer";
-  version = "6.1.11";
+  version = "6.2.4";
   format = "setuptools";
 
   disabled = pythonOlder "3.7";
@@ -30,7 +30,7 @@ buildPythonPackage rec {
     owner = pname;
     repo = "softlayer-python";
     rev = "refs/tags/v${version}";
-    hash = "sha256-2iN3T58aICQlGwr10/e/mWE9pA4rbJCBTE1jTu3GeGk=";
+    hash = "sha256-Hl3nW31EoqjziYMeeHip/Ieq8eYLa7//qrENThPa7ns=";
   };
 
   postPatch = ''
@@ -71,9 +71,7 @@ buildPythonPackage rec {
     "tests/transports/soap_tests.py.unstable"
   ];
 
-  pythonImportsCheck = [
-    "SoftLayer"
-  ];
+  pythonImportsCheck = [ "SoftLayer" ];
 
   meta = with lib; {
     description = "Python libraries that assist in calling the SoftLayer API";

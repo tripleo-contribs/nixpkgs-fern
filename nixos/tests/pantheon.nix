@@ -13,6 +13,13 @@ import ./make-test-python.nix ({ pkgs, lib, ...} :
     services.xserver.enable = true;
     services.xserver.desktopManager.pantheon.enable = true;
 
+    # We ship pantheon.appcenter by default when this is enabled.
+    services.flatpak.enable = true;
+
+    # We don't ship gnome-text-editor in Pantheon module, we add this line mainly
+    # to catch eval issues related to this option.
+    environment.pantheon.excludePackages = [ pkgs.gnome-text-editor ];
+
     environment.systemPackages = [ pkgs.xdotool ];
   };
 
@@ -50,7 +57,7 @@ import ./make-test-python.nix ({ pkgs, lib, ...} :
             machine.wait_until_succeeds(f"pgrep -f {i}")
         for i in ["gala", "io.elementary.wingpanel", "plank"]:
             machine.wait_for_window(i)
-        for i in ["io.elementary.gala.daemon@x11.service", "bamfdaemon.service", "io.elementary.files.xdg-desktop-portal.service"]:
+        for i in ["bamfdaemon.service", "io.elementary.files.xdg-desktop-portal.service"]:
             machine.wait_for_unit(i, "${user.name}")
 
     with subtest("Check if various environment variables are set"):
@@ -89,9 +96,8 @@ import ./make-test-python.nix ({ pkgs, lib, ...} :
         cmd = "dbus-send --session --dest=org.pantheon.gala --print-reply /org/pantheon/gala org.pantheon.gala.PerformAction int32:1"
         env = "DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/${toString user.uid}/bus DISPLAY=:0"
         machine.succeed(f"su - ${user.name} -c '{env} {cmd}'")
-        machine.sleep(3)
+        machine.sleep(5)
         machine.screenshot("multitasking")
-        machine.succeed(f"su - ${user.name} -c '{env} {cmd}'")
 
     with subtest("Check if gala has ever coredumped"):
         machine.fail("coredumpctl --json=short | grep gala")

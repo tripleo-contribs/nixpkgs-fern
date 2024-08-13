@@ -5,7 +5,6 @@
 , pkg-config
 , automake
 , autoconf
-, m4
 , libtool
 , gtk3
 , libv3270
@@ -13,8 +12,7 @@
 , openssl
 , gettext
 , desktop-file-utils
-, glib
-, wrapGAppsHook
+, wrapGAppsHook3
 }:
 
 stdenv.mkDerivation rec {
@@ -35,7 +33,7 @@ stdenv.mkDerivation rec {
     automake
     libtool
     desktop-file-utils
-    wrapGAppsHook
+    wrapGAppsHook3
   ];
 
   buildInputs = [

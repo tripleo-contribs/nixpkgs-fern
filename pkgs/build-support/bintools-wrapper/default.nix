@@ -8,7 +8,8 @@
 { name ? ""
 , lib
 , stdenvNoCC
-, bintools ? null, libc ? null, coreutils ? null, shell ? stdenvNoCC.shell, gnugrep ? null
+, runtimeShell
+, bintools ? null, libc ? null, coreutils ? null, gnugrep ? null
 , netbsd ? null, netbsdCross ? null
 , sharedLibraryLoader ?
   if libc == null then
@@ -28,7 +29,7 @@
 , isGNU ? bintools.isGNU or false
 , isLLVM ? bintools.isLLVM or false
 , isCCTools ? bintools.isCCTools or false
-, buildPackages ? {}
+, expand-response-params
 , targetPackages ? {}
 , useMacosReexportHack ? false
 , wrapGas ? false
@@ -44,21 +45,24 @@
     "relro"
     "stackprotector"
     "strictoverflow"
-  ] ++ lib.optional (with stdenvNoCC;
-    # Musl-based platforms will keep "pie", other platforms will not.
-    # If you change this, make sure to update section `{#sec-hardening-in-nixpkgs}`
-    # in the nixpkgs manual to inform users about the defaults.
-    targetPlatform.libc == "musl"
-    # Except when:
-    #    - static aarch64, where compilation works, but produces segfaulting dynamically linked binaries.
-    #    - static armv7l, where compilation fails.
-    && !(targetPlatform.isAarch && targetPlatform.isStatic)
-  ) "pie"
-
-# Darwin code signing support utilities
-, postLinkSignHook ? null, signingUtils ? null
+    "zerocallusedregs"
+  ] ++ lib.optional (with stdenvNoCC; lib.any (x: x) [
+    # OpenBSD static linking requires PIE
+    (with targetPlatform; isOpenBSD && isStatic)
+    (lib.all (x: x) [
+      # Musl-based platforms will keep "pie", other platforms will not.
+      # If you change this, make sure to update section `{#sec-hardening-in-nixpkgs}`
+      # in the nixpkgs manual to inform users about the defaults.
+      (targetPlatform.libc == "musl")
+      # Except when:
+      #    - static aarch64, where compilation works, but produces segfaulting dynamically linked binaries.
+      #    - static armv7l, where compilation fails.
+      (!(targetPlatform.isAarch && targetPlatform.isStatic))
+    ])
+  ]) "pie"
 }:
 
+assert propagateDoc -> bintools ? man;
 assert nativeTools -> !propagateDoc && nativePrefix != "";
 assert !nativeTools -> bintools != null && coreutils != null && gnugrep != null;
 assert !(nativeLibc && noLibc);
@@ -83,8 +87,7 @@ let
     replaceStrings
     ;
 
-  stdenv = stdenvNoCC;
-  inherit (stdenv) hostPlatform targetPlatform;
+  inherit (stdenvNoCC) hostPlatform targetPlatform;
 
   # Prefix for binaries. Customarily ends with a dash separator.
   #
@@ -117,28 +120,27 @@ let
     else if targetPlatform.libc == "nblibc"           then "${sharedLibraryLoader}/libexec/ld.elf_so"
     else if targetPlatform.system == "i686-linux"     then "${sharedLibraryLoader}/lib/ld-linux.so.2"
     else if targetPlatform.system == "x86_64-linux"   then "${sharedLibraryLoader}/lib/ld-linux-x86-64.so.2"
+    else if targetPlatform.system == "s390x-linux"    then "${sharedLibraryLoader}/lib/ld64.so.1"
     # ELFv1 (.1) or ELFv2 (.2) ABI
     else if targetPlatform.isPower64                  then "${sharedLibraryLoader}/lib/ld64.so.*"
     # ARM with a wildcard, which can be "" or "-armhf".
     else if (with targetPlatform; isAarch32 && isLinux)   then "${sharedLibraryLoader}/lib/ld-linux*.so.3"
     else if targetPlatform.system == "aarch64-linux"  then "${sharedLibraryLoader}/lib/ld-linux-aarch64.so.1"
     else if targetPlatform.system == "powerpc-linux"  then "${sharedLibraryLoader}/lib/ld.so.1"
+    else if targetPlatform.system == "s390-linux"     then "${sharedLibraryLoader}/lib/ld.so.1"
+    else if targetPlatform.system == "s390x-linux"    then "${sharedLibraryLoader}/lib/ld64.so.1"
     else if targetPlatform.isMips                     then "${sharedLibraryLoader}/lib/ld.so.1"
     # `ld-linux-riscv{32,64}-<abi>.so.1`
     else if targetPlatform.isRiscV                    then "${sharedLibraryLoader}/lib/ld-linux-riscv*.so.1"
     else if targetPlatform.isLoongArch64              then "${sharedLibraryLoader}/lib/ld-linux-loongarch*.so.1"
     else if targetPlatform.isDarwin                   then "/usr/lib/dyld"
-    else if targetPlatform.isFreeBSD                  then "/libexec/ld-elf.so.1"
+    else if targetPlatform.isFreeBSD                  then "${sharedLibraryLoader}/libexec/ld-elf.so.1"
     else if hasSuffix "pc-gnu" targetPlatform.config then "ld.so.1"
     else "";
 
-  expand-response-params =
-    optionalString (buildPackages ? stdenv && buildPackages.stdenv.hasCC && buildPackages.stdenv.cc != "/dev/null")
-    (import ../expand-response-params { inherit (buildPackages) stdenv; });
-
 in
 
-stdenv.mkDerivation {
+stdenvNoCC.mkDerivation {
   pname = targetPrefix
     + (if name != "" then name else "${bintoolsName}-wrapper");
   version = optionalString (bintools != null) bintoolsVersion;
@@ -346,7 +348,7 @@ stdenv.mkDerivation {
       done
     ''
 
-    + optionalString stdenv.targetPlatform.isDarwin ''
+    + optionalString targetPlatform.isDarwin ''
       echo "-arch ${targetPlatform.darwinArch}" >> $out/nix-support/libc-ldflags
     ''
 
@@ -355,7 +357,7 @@ stdenv.mkDerivation {
     ##
 
     # TODO(@sternenseemann): make a generic strip wrapper?
-    + optionalString (bintools.isGNU or false) ''
+    + optionalString (bintools.isGNU or false || bintools.isCCTools or false) ''
       wrap ${targetPrefix}strip ${./gnu-binutils-strip-wrapper.sh} \
         "${bintools_bin}/bin/${targetPrefix}strip"
     ''
@@ -363,7 +365,7 @@ stdenv.mkDerivation {
     ###
     ### Remove certain timestamps from final binaries
     ###
-    + optionalString (stdenv.targetPlatform.isDarwin && !(bintools.isGNU or false)) ''
+    + optionalString (targetPlatform.isDarwin && !(bintools.isGNU or false)) ''
       echo "export ZERO_AR_DATE=1" >> $out/nix-support/setup-hook
     ''
 
@@ -380,9 +382,9 @@ stdenv.mkDerivation {
     ###
     ### Ensure consistent LC_VERSION_MIN_MACOSX
     ###
-    + optionalString stdenv.targetPlatform.isDarwin (
+    + optionalString targetPlatform.isDarwin (
       let
-        inherit (stdenv.targetPlatform)
+        inherit (targetPlatform)
           darwinPlatform darwinSdkVersion
           darwinMinVersion darwinMinVersionVariable;
       in ''
@@ -395,32 +397,16 @@ stdenv.mkDerivation {
     )
 
     ##
-    ## Code signing on Apple Silicon
-    ##
-    + optionalString (targetPlatform.isDarwin && targetPlatform.isAarch64) ''
-      echo 'source ${postLinkSignHook}' >> $out/nix-support/post-link-hook
-
-      export signingUtils=${signingUtils}
-
-      wrap \
-        ${targetPrefix}install_name_tool \
-        ${./darwin-install_name_tool-wrapper.sh} \
-        "${bintools_bin}/bin/${targetPrefix}install_name_tool"
-
-      wrap \
-        ${targetPrefix}strip ${./darwin-strip-wrapper.sh} \
-        "${bintools_bin}/bin/${targetPrefix}strip"
-    ''
-
-    ##
     ## Extra custom steps
     ##
     + extraBuildCommands;
 
   env = {
     # for substitution in utils.bash
+    # TODO(@sternenseemann): invent something cleaner than passing in "" in case of absence
     expandResponseParams = "${expand-response-params}/bin/expand-response-params";
-    shell = getBin shell + shell.shellPath or "";
+    # TODO(@sternenseemann): rename env var via stdenv rebuild
+    shell = (getBin runtimeShell + runtimeShell.shellPath or "");
     gnugrep_bin = optionalString (!nativeTools) gnugrep;
     wrapperName = "BINTOOLS_WRAPPER";
     inherit dynamicLinker targetPrefix suffixSalt coreutils_bin;
