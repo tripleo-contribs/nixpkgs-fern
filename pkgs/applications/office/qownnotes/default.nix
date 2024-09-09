@@ -1,7 +1,7 @@
 { lib
 , stdenv
 , fetchurl
-, qmake
+, cmake
 , qttools
 , qtbase
 , qtdeclarative
@@ -20,18 +20,18 @@
 let
   pname = "qownnotes";
   appname = "QOwnNotes";
-  version = "24.8.3";
+  version = "24.9.1";
 in
 stdenv.mkDerivation {
   inherit pname version;
 
   src = fetchurl {
     url = "https://github.com/pbek/QOwnNotes/releases/download/v${version}/qownnotes-${version}.tar.xz";
-    hash = "sha256-lbNJT6IbIgTYLpsMWK6Nk0XXhw1De+wZgrH4DE1vDKg=";
+    hash = "sha256-W9w7FJ0EfwPLC9R6OnDz+yny4VSaRGdrPXvaReV9hco=";
   };
 
   nativeBuildInputs = [
-    qmake
+    cmake
     qttools
     wrapQtAppsHook
     pkg-config
@@ -47,8 +47,9 @@ stdenv.mkDerivation {
     botan2
   ] ++ lib.optionals stdenv.isLinux [ qtwayland ];
 
-  qmakeFlags = [
-    "USE_SYSTEM_BOTAN=1"
+  cmakeFlags = [
+    "-DQON_QT6_BUILD=ON"
+    "-DBUILD_WITH_SYSTEM_BOTAN=ON"
   ];
 
   postInstall = ''

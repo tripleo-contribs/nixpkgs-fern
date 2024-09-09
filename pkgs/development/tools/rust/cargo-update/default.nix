@@ -16,14 +16,14 @@
 
 rustPlatform.buildRustPackage rec {
   pname = "cargo-update";
-  version = "14.0.0";
+  version = "14.1.1";
 
   src = fetchCrate {
     inherit pname version;
-    hash = "sha256-TSqvT5YjnlfXvNjsiG7lR4f8QIzFoTG9Z70Wy66MhNM=";
+    hash = "sha256-2UV+BetL6MBHAyPcMTbssLNgJQKoJOo2iG3uGPWSrUs=";
   };
 
-  cargoHash = "sha256-hkKr/3mTrnznOWfySTWY+tmeWYjn7nAk+sP4ISPlqHs=";
+  cargoHash = "sha256-Qn2DquO3HmhZvCk6FaowodgURvtA5gXrztN+wp60bSA=";
 
   nativeBuildInputs = [
     cmake

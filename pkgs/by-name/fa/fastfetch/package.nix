@@ -10,7 +10,7 @@
   ddcutil,
   glib,
   hwdata,
-  imagemagick_light,
+  imagemagick,
   libXrandr,
   libdrm,
   libglvnd,
@@ -47,13 +47,13 @@ let
 in
 stdenv'.mkDerivation (finalAttrs: {
   pname = "fastfetch";
-  version = "2.21.0";
+  version = "2.23.0";
 
   src = fetchFromGitHub {
     owner = "fastfetch-cli";
     repo = "fastfetch";
     rev = finalAttrs.version;
-    hash = "sha256-1bWWwMzbzECWARhl3ULMVF5QhbvrV5ShVT382BnRGg8=";
+    hash = "sha256-ry7FWja/FGSTQU1IhfXUA778yO0T3O1cvYsS4pcqURY=";
   };
 
   outputs = [
@@ -71,7 +71,7 @@ stdenv'.mkDerivation (finalAttrs: {
   buildInputs =
     [
       chafa
-      imagemagick_light
+      imagemagick
       pcre
       pcre2
       sqlite

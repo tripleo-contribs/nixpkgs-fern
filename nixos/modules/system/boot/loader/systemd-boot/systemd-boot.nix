@@ -28,6 +28,8 @@ let
 
     isExecutable = true;
 
+    inherit (builtins) storeDir;
+
     inherit (pkgs) python3;
 
     systemd = config.systemd.package;
@@ -80,8 +82,6 @@ let
         ${pkgs.coreutils}/bin/install -D $empty_file "${bootMountPoint}/${nixosDir}/.extra-files/loader/entries/"${escapeShellArg n}
       '') cfg.extraEntries)}
     '';
-    bootCountingTries = cfg.bootCounting.tries;
-    bootCounting = if cfg.bootCounting.enable then "True" else "False";
   };
 
   finalSystemdBootBuilder = pkgs.writeScript "install-systemd-boot.sh" ''
@@ -91,10 +91,7 @@ let
   '';
 in {
 
-  meta = {
-    maintainers = with lib.maintainers; [ julienmalka ];
-    doc = ./boot-counting.md;
-  };
+  meta.maintainers = with lib.maintainers; [ julienmalka ];
 
   imports =
     [ (mkRenamedOptionModule [ "boot" "loader" "gummiboot" "enable" ] [ "boot" "loader" "systemd-boot" "enable" ])
@@ -219,7 +216,7 @@ in {
     consoleMode = mkOption {
       default = "keep";
 
-      type = types.enum [ "0" "1" "2" "auto" "max" "keep" ];
+      type = types.enum [ "0" "1" "2" "5" "auto" "max" "keep" ];
 
       description = ''
         The resolution of the console. The following values are valid:
@@ -227,6 +224,7 @@ in {
         - `"0"`: Standard UEFI 80x25 mode
         - `"1"`: 80x50 mode, not supported by all devices
         - `"2"`: The first non-standard mode provided by the device firmware, if any
+        - `"5"`: Applicable for SteamDeck where this mode represent horizontal mode
         - `"auto"`: Pick a suitable mode automatically using heuristics
         - `"max"`: Pick the highest-numbered available mode
         - `"keep"`: Keep the mode selected by firmware (the default)
@@ -331,15 +329,6 @@ in {
         Only enable this option if `systemd-boot` otherwise fails to install, as the
         scope or implication of the `--graceful` option may change in the future.
       '';
-    };
-
-    bootCounting = {
-      enable = mkEnableOption "automatic boot assessment";
-      tries = mkOption {
-        default = 3;
-        type = types.int;
-        description = "number of tries each entry should start with";
-      };
     };
 
     rebootForBitlocker = mkOption {

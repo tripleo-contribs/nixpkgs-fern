@@ -29,6 +29,7 @@
   vulkan-headers,
   vulkan-loader,
   wayland,
+  wayland-scanner,
   wrapGAppsHook3,
   wxGTK32,
   zarchive,
@@ -69,11 +70,11 @@ in stdenv.mkDerivation (finalAttrs: {
     addDriverRunpath
     wrapGAppsHook3
     cmake
-    glslang
     nasm
     ninja
     pkg-config
     wxGTK32
+    wayland-scanner
   ];
 
   buildInputs = [
@@ -83,6 +84,7 @@ in stdenv.mkDerivation (finalAttrs: {
     curl
     fmt_9
     glm
+    glslang
     gtk3
     hidapi
     imgui'

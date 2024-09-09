@@ -1,6 +1,6 @@
 { stdenv
 , lib
-, buildGoModule
+, buildGo123Module
 , fetchFromGitHub
 , installShellFiles
 , buildPackages
@@ -8,18 +8,18 @@
 , hugo
 }:
 
-buildGoModule rec {
+buildGo123Module rec {
   pname = "hugo";
-  version = "0.131.0";
+  version = "0.134.0";
 
   src = fetchFromGitHub {
     owner = "gohugoio";
     repo = "hugo";
     rev = "refs/tags/v${version}";
-    hash = "sha256-FtCh96ZPSwaFko/BIMoDoKwBt+sYBuhCG7ug6oYgdKQ=";
+    hash = "sha256-XglHrV+MD9Nq1qwJB63eATuS+6SwjZVF5u6H5EejEow=";
   };
 
-  vendorHash = "sha256-enhuBKRr2wZN04kGiTKlBX/CnBkL16Ivllg85N97Mt4=";
+  vendorHash = "sha256-oDa5uWQ/vFSmTNwZ3zsYtsuLCzddV9DeaEGx5krwWRE=";
 
   doCheck = false;
 

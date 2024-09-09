@@ -48,23 +48,23 @@ let
   # and often with different versions.  We write them on three lines
   # like this (rather than using {}) so that the updater script can
   # find where to edit them.
-  versions.aarch64-darwin = "6.1.6.37851";
-  versions.x86_64-darwin = "6.1.6.37851";
-  versions.x86_64-linux = "6.1.6.1013";
+  versions.aarch64-darwin = "6.1.11.39163";
+  versions.x86_64-darwin = "6.1.11.39163";
+  versions.x86_64-linux = "6.1.11.1545";
 
   srcs = {
     aarch64-darwin = fetchurl {
       url = "https://zoom.us/client/${versions.aarch64-darwin}/zoomusInstallerFull.pkg?archType=arm64";
       name = "zoomusInstallerFull.pkg";
-      hash = "sha256-wsatsfVQElWXMZKZOVeqVBBE7ZRXx54OpA82ZzpymUI=";
+      hash = "sha256-xWeCiDhYPfTAJttXG5bCwhLu+bmHlcFF/s3+EACeph4=";
     };
     x86_64-darwin = fetchurl {
       url = "https://zoom.us/client/${versions.x86_64-darwin}/zoomusInstallerFull.pkg";
-      hash = "sha256-BTLEfVFrUQbb+LpGP93hMqGFWhKM3tBdKxDKe8GkhiA=";
+      hash = "sha256-AB+QXx6r3raymVU7rEJ9dO4CqJI9tnRF3l61vuGnqpI=";
     };
     x86_64-linux = fetchurl {
       url = "https://zoom.us/client/${versions.x86_64-linux}/zoom_x86_64.pkg.tar.xz";
-      hash = "sha256-mvCJft0suOxnwTkWWuH9OYKHwTMWx61ct10P5Q/EVBM=";
+      hash = "sha256-wkG/fYbn3EdbVJwZQI8EcRPmHFX+4zggmfM4sHUjD8I=";
     };
   };
 
@@ -156,7 +156,7 @@ stdenv.mkDerivation rec {
   '' + lib.optionalString stdenv.isLinux ''
     # Desktop File
     substituteInPlace $out/share/applications/Zoom.desktop \
-        --replace "Exec=/usr/bin/zoom" "Exec=$out/bin/zoom"
+        --replace-fail "Exec=/usr/bin/zoom" "Exec=$out/bin/zoom"
 
     for i in aomhost zopen zoom ZoomLauncher; do
       patchelf --set-interpreter "$(cat $NIX_CC/nix-support/dynamic-linker)" $out/opt/zoom/$i
