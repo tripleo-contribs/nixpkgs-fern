@@ -7,12 +7,12 @@
 
 python3Packages.buildPythonApplication rec {
   pname = "streamlink";
-  version = "6.9.0";
+  version = "6.11.0";
   pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
-    hash = "sha256-LKmwsXuAvJ0JqEIsOQyzjYGa9VZkk5YL8hDY/uIhwX8=";
+    hash = "sha256-Vi5ddTyhCeGVYgfeSsJ8M3zmuZ++ftcgO5RRBe1bL4Y=";
   };
 
   patches = [
@@ -31,7 +31,6 @@ python3Packages.buildPythonApplication rec {
     mock
     requests-mock
     freezegun
-    pytest-asyncio
     pytest-trio
   ];
 

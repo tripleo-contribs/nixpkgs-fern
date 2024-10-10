@@ -31,6 +31,12 @@ in
 buildFHSEnv {
   name = "dropbox";
 
+  # The dropbox-cli command `dropbox start` starts the dropbox daemon in a
+  # separate session, and wants the daemon to outlive the launcher.  Enabling
+  # `--die-with-parent` defeats this and causes the daemon to exit when
+  # dropbox-cli exits.
+  dieWithParent = false;
+
   # dropbox-cli (i.e. nautilus-dropbox) needs the PID to confirm dropbox is running.
   # Dropbox's internal limit-to-one-instance check also relies on the PID.
   unsharePid = false;
@@ -82,7 +88,7 @@ buildFHSEnv {
     description = "Online stored folders (daemon version)";
     homepage    = "http://www.dropbox.com/";
     license     = licenses.unfree;
-    maintainers = with maintainers; [ eclairevoyant ttuegel ];
+    maintainers = with maintainers; [ ttuegel ];
     platforms   = [ "i686-linux" "x86_64-linux" ];
     mainProgram = "dropbox";
   };

@@ -8,6 +8,8 @@
   wrapGAppsHook3,
   v2ray-geoip,
   v2ray-domain-list-community,
+  copyDesktopItems,
+  makeDesktopItem,
 }:
 let
   pname = "clash-verge-rev";
@@ -27,6 +29,20 @@ let
     hash = "sha256-HyRTOqPj4SnV9gktqRegxOYz9c8mQHOX+IrdZlHhYpo=";
   };
 
+  meta-unwrapped = {
+    description = "Clash GUI based on tauri";
+    homepage = "https://github.com/clash-verge-rev/clash-verge-rev";
+    license = lib.licenses.gpl3Only;
+    maintainers = with lib.maintainers; [
+      Guanran928
+      bot-wxt1221
+    ];
+    platforms = [
+      "x86_64-linux"
+      "aarch64-linux"
+    ];
+  };
+
   service-cargo-hash = "sha256-NBeHR6JvdCp06Ug/UEtLY2tu3iCmlsCU0x8umRbJXLU=";
 
   service = callPackage ./service.nix {
@@ -36,6 +52,7 @@ let
       service-cargo-hash
       pname
       ;
+    meta = meta-unwrapped;
   };
 
   webui = callPackage ./webui.nix {
@@ -44,6 +61,8 @@ let
       src
       pname
       ;
+    meta = meta-unwrapped;
+
   };
 
   sysproxy-hash = "sha256-TEC51s/viqXUoEH9rJev8LdC2uHqefInNcarxeogePk=";
@@ -55,8 +74,8 @@ let
       src
       sysproxy-hash
       webui
-      meta
       ;
+    meta = meta-unwrapped;
   };
 
   meta = {
@@ -84,7 +103,22 @@ stdenv.mkDerivation {
 
   nativeBuildInputs = [
     wrapGAppsHook3
+    copyDesktopItems
   ];
+
+  desktopItems = [
+    (makeDesktopItem {
+      name = "clash-verge";
+      exec = "clash-verge";
+      comment = "Clash Verge Rev";
+      type = "Application";
+      icon = "clash-verge";
+      desktopName = "Clash Verge Rev";
+      terminal = false;
+      categories = [ "Network" ];
+    })
+  ];
+
   installPhase = ''
     runHook preInstall
 

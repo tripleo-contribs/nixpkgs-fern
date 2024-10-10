@@ -5,6 +5,11 @@ let
   cfg = config.power.ups;
   defaultPort = 3493;
 
+  envVars = {
+    NUT_CONFPATH = "/etc/nut";
+    NUT_STATEPATH = "/var/lib/nut";
+  };
+
   nutFormat = {
 
     type = with lib.types; let
@@ -493,13 +498,20 @@ in
       })
     ];
 
+    # For interactive use.
     environment.systemPackages = [ pkgs.nut ];
+    environment.variables = envVars;
 
     networking.firewall = lib.mkIf cfg.openFirewall {
       allowedTCPPorts =
         if cfg.upsd.listen == []
         then [ defaultPort ]
         else lib.unique (lib.forEach cfg.upsd.listen (listen: listen.port));
+    };
+
+    systemd.slices.system-ups = {
+      description = "Network UPS Tools (NUT) Slice";
+      documentation = [ "https://networkupstools.org/" ];
     };
 
     systemd.services.upsmon = let
@@ -516,9 +528,9 @@ in
         ExecStart = "${pkgs.nut}/sbin/upsmon";
         ExecReload = "${pkgs.nut}/sbin/upsmon -c reload";
         LoadCredential = lib.mapAttrsToList (name: monitor: "upsmon_password_${name}:${monitor.passwordFile}") cfg.upsmon.monitor;
+        Slice = "system-ups.slice";
       };
-      environment.NUT_CONFPATH = "/etc/nut";
-      environment.NUT_STATEPATH = "/var/lib/nut";
+      environment = envVars;
     };
 
     systemd.services.upsd = let
@@ -536,9 +548,9 @@ in
         ExecStart = "${pkgs.nut}/sbin/upsd -u root";
         ExecReload = "${pkgs.nut}/sbin/upsd -c reload";
         LoadCredential = lib.mapAttrsToList (name: user: "upsdusers_password_${name}:${user.passwordFile}") cfg.users;
+        Slice = "system-ups.slice";
       };
-      environment.NUT_CONFPATH = "/etc/nut";
-      environment.NUT_STATEPATH = "/var/lib/nut";
+      environment = envVars;
       restartTriggers = [
         config.environment.etc."nut/upsd.conf".source
       ];
@@ -554,9 +566,9 @@ in
         RemainAfterExit = true;
         # TODO: replace 'root' by another username.
         ExecStart = "${pkgs.nut}/bin/upsdrvctl -u root start";
+        Slice = "system-ups.slice";
       };
-      environment.NUT_CONFPATH = "/etc/nut";
-      environment.NUT_STATEPATH = "/var/lib/nut";
+      environment = envVars;
       restartTriggers = [
         config.environment.etc."nut/ups.conf".source
       ];

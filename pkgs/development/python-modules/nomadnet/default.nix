@@ -12,7 +12,7 @@
 
 buildPythonPackage rec {
   pname = "nomadnet";
-  version = "0.5.0";
+  version = "0.5.4";
   pyproject = true;
 
   disabled = pythonOlder "3.7";
@@ -21,7 +21,7 @@ buildPythonPackage rec {
     owner = "markqvist";
     repo = "NomadNet";
     rev = "refs/tags/${version}";
-    hash = "sha256-pYlEstApB0SYnkEfQ0kZl53xtbvTkRV+930TrCMqhbA=";
+    hash = "sha256-4dHxwTHDe8aE/FFtf9jhOO1Wf3uU7KjBa/ngj8o5iMY=";
   };
 
   build-system = [ setuptools ];
