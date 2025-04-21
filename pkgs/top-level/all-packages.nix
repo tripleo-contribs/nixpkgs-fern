@@ -6484,11 +6484,6 @@ with pkgs;
     stdenv = gcc10Stdenv;
   };
 
-  fstar = callPackage ../development/compilers/fstar {
-    ocamlPackages = ocaml-ng.ocamlPackages_4_14;
-    z3 = z3_4_8_5;
-  };
-
   dotnetPackages = recurseIntoAttrs (callPackage ./dotnet-packages.nix { });
 
   gopro-tool = callPackage ../by-name/go/gopro-tool/package.nix {
@@ -19332,12 +19327,6 @@ with pkgs;
   zrythm = callPackage ../applications/audio/zrythm {
     inherit (plasma5Packages) breeze-icons;
   };
-
-  honeymarker = callPackage ../servers/tracing/honeycomb/honeymarker { };
-
-  honeytail = callPackage ../servers/tracing/honeycomb/honeytail { };
-
-  honeyvent = callPackage ../servers/tracing/honeycomb/honeyvent { };
 
   swift-corelibs-libdispatch = swiftPackages.Dispatch;
 
