@@ -1129,8 +1129,6 @@ with pkgs;
 
   py7zr = with python3Packages; toPythonApplication py7zr;
 
-  q = callPackage ../tools/networking/q { };
-
   qFlipper = libsForQt5.callPackage ../tools/misc/qflipper { };
 
   ronin = callPackage ../tools/security/ronin { };
@@ -4423,7 +4421,6 @@ with pkgs;
   subzerod = with python3Packages; toPythonApplication subzerod;
 
   system-config-printer = callPackage ../tools/misc/system-config-printer {
-    autoreconfHook = buildPackages.autoreconfHook269;
     libxml2 = libxml2Python;
   };
 
